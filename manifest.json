@@ -1,0 +1,9 @@
+{
+  "id": "calendar-events",
+  "name": "Calendar Events",
+  "version": "0.1.0",
+  "minAppVersion": "0.15.0",
+  "description": "Display calendar events from ICS feeds in the sidebar. Click to create daily note entries with attendee backlinks.",
+  "author": "Dan Farrelly",
+  "isDesktopOnly": false
+}

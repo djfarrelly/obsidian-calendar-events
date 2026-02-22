@@ -1,0 +1,134 @@
+/* Calendar Events Plugin Styles */
+
+.calendar-events-container {
+  padding: 8px;
+}
+
+/* Header with date nav */
+.calendar-events-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.calendar-events-nav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.calendar-events-nav:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.calendar-events-date {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-normal);
+}
+
+.calendar-events-today-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.calendar-events-today-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* Event list */
+.calendar-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calendar-events-empty {
+  text-align: center;
+  color: var(--text-faint);
+  padding: 24px 0;
+  font-size: 13px;
+}
+
+/* Individual event item */
+.calendar-events-item {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.calendar-events-item:hover {
+  background: var(--background-modifier-hover);
+}
+.calendar-events-item-added {
+  opacity: 0.5;
+}
+.calendar-events-item-added::after {
+  content: " ✓";
+  color: var(--text-success);
+  font-size: 11px;
+}
+
+/* Color dot */
+.calendar-events-dot {
+  width: 4px;
+  min-width: 4px;
+  border-radius: 2px;
+  margin-top: 2px;
+  align-self: stretch;
+}
+
+/* Event info */
+.calendar-events-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.calendar-events-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 1px;
+}
+
+.calendar-events-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-events-attendees {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Settings styles */
+.calendar-events-feed-setting {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
