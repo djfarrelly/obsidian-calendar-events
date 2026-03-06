@@ -1,6 +1,6 @@
 {
   "name": "obsidian-calendar-events",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Display calendar events from ICS feeds in Obsidian sidebar",
   "main": "main.js",
   "scripts": {
