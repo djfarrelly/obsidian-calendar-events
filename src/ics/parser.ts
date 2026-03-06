@@ -22,10 +22,23 @@ export function parseICS(icsData: string, feed: CalendarFeed): CalendarEvent[] {
   const vevents = comp.getAllSubcomponents("vevent");
   const events: CalendarEvent[] = [];
 
+  // Collect recurrence overrides keyed by "uid_originalStartMs".
+  // These are VEVENTs with RECURRENCE-ID that replace or reschedule a single
+  // occurrence of a recurring event. We need to:
+  // 1. Remove the original occurrence from the RRULE expansion
+  // 2. Add the override's actual start/end time instead
+  const overrides = new Map<string, ICAL.Component[]>();
   for (const vevent of vevents) {
-    // Skip override VEVENTs (those with RECURRENCE-ID). These are modifications
-    // to individual occurrences of a recurring event. The master recurring event's
-    // expansion already covers these dates, so processing them separately causes duplicates.
+    const recurrenceId = vevent.getFirstPropertyValue("recurrence-id") as ICAL.Time | null;
+    if (!recurrenceId) continue;
+    const uid = vevent.getFirstPropertyValue("uid") as string;
+    const key = uid + "_" + recurrenceId.toJSDate().getTime();
+    if (!overrides.has(key)) overrides.set(key, []);
+    overrides.get(key)!.push(vevent);
+  }
+
+  for (const vevent of vevents) {
+    // Skip override VEVENTs here — they are processed via the overrides map
     if (vevent.getFirstPropertyValue("recurrence-id")) {
       continue;
     }
@@ -43,9 +56,24 @@ export function parseICS(icsData: string, feed: CalendarFeed): CalendarEvent[] {
         const occStart = next.toJSDate();
         if (occStart > end) break;
         if (occStart >= start) {
-          const duration = event.duration;
-          const occEnd = new Date(occStart.getTime() + (duration ? duration.toSeconds() * 1000 : 3600000));
-          events.push(buildEvent(vevent, event, feed, occStart, occEnd));
+          const key = event.uid + "_" + occStart.getTime();
+          const overrideVevents = overrides.get(key);
+          if (overrideVevents) {
+            // This occurrence has been overridden (rescheduled/modified).
+            // Use the override's actual time instead of the RRULE occurrence.
+            for (const ov of overrideVevents) {
+              const ovEvent = new ICAL.Event(ov);
+              const ovStart = ovEvent.startDate;
+              const ovEnd = ovEvent.endDate;
+              if (ovStart) {
+                events.push(buildEvent(ov, ovEvent, feed, ovStart.toJSDate(), ovEnd ? ovEnd.toJSDate() : ovStart.toJSDate()));
+              }
+            }
+          } else {
+            const duration = event.duration;
+            const occEnd = new Date(occStart.getTime() + (duration ? duration.toSeconds() * 1000 : 3600000));
+            events.push(buildEvent(vevent, event, feed, occStart, occEnd));
+          }
         }
         next = iter.next();
         count++;
