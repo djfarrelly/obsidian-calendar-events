@@ -4,10 +4,32 @@ import { CalendarEvent, Attendee, CalendarFeed } from "../types";
 export function parseICS(icsData: string, feed: CalendarFeed): CalendarEvent[] {
   const jcalData = ICAL.parse(icsData);
   const comp = new ICAL.Component(jcalData);
+
+  // Register VTIMEZONE components so ical.js can resolve TZID parameters.
+  // Without this, times with a TZID are treated as floating (local) time,
+  // causing events from other timezones to display at the wrong time.
+  const timezones = comp.getAllSubcomponents("vtimezone");
+  for (const tz of timezones) {
+    const tzid = tz.getFirstPropertyValue("tzid");
+    if (tzid) {
+      ICAL.TimezoneService.register(
+        tzid,
+        new ICAL.Timezone({ component: tz, tzid })
+      );
+    }
+  }
+
   const vevents = comp.getAllSubcomponents("vevent");
   const events: CalendarEvent[] = [];
 
   for (const vevent of vevents) {
+    // Skip override VEVENTs (those with RECURRENCE-ID). These are modifications
+    // to individual occurrences of a recurring event. The master recurring event's
+    // expansion already covers these dates, so processing them separately causes duplicates.
+    if (vevent.getFirstPropertyValue("recurrence-id")) {
+      continue;
+    }
+
     const event = new ICAL.Event(vevent);
     if (event.isRecurring()) {
       // Expand recurring events for a window (±6 months)

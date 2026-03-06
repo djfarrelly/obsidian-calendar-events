@@ -24,11 +24,22 @@ declare module 'ical.js' {
 
 		class Time {
 			isDate: boolean;
+			zone: { tzid: string } | null;
 			toJSDate(): Date;
 		}
 
 		class Duration {
 			toSeconds(): number;
+		}
+
+		class Timezone {
+			constructor(opts: { component: Component; tzid: string });
+			tzid: string;
+		}
+
+		namespace TimezoneService {
+			function register(tzid: string, timezone: Timezone): void;
+			function get(tzid: string): Timezone | null;
 		}
 
 		class Property {
