@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { CalendarEventsSettings, DEFAULT_SETTINGS } from "./types";
 import { EventCache } from "./ics/cache";
 import { NoteCreator } from "./notes/creator";
@@ -38,6 +38,19 @@ export default class CalendarEventsPlugin extends Plugin {
       await this.refreshEvents();
       this.startAutoRefresh();
     });
+
+    // When a daily note is opened (e.g. via Calendar plugin), sync the date
+    this.registerEvent(
+      this.app.workspace.on("file-open", (file: TFile | null) => {
+        if (!file) return;
+        const date = this.parseDateFromDailyNote(file);
+        if (!date) return;
+        const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
+        for (const leaf of leaves) {
+          (leaf.view as CalendarEventsView).setDate(date);
+        }
+      })
+    );
   }
 
   onunload(): void {
@@ -70,6 +83,15 @@ export default class CalendarEventsPlugin extends Plugin {
     const ms = this.settings.refreshIntervalMinutes * 60 * 1000;
     this.refreshInterval = window.setInterval(() => this.refreshEvents(), ms);
     this.registerInterval(this.refreshInterval);
+  }
+
+  private parseDateFromDailyNote(file: TFile): Date | null {
+    const folder = this.settings.dailyNoteFolder;
+    // Check the file is in the daily notes folder (if configured)
+    if (folder && !file.path.startsWith(folder + "/")) return null;
+    const m = window.moment(file.basename, this.settings.dailyNoteFormat, true);
+    if (!m.isValid()) return null;
+    return m.toDate();
   }
 
   async activateView(): Promise<void> {
